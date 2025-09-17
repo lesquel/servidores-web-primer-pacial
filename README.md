@@ -23,8 +23,8 @@ El objetivo es construir soluciones escalables, modulares y fáciles de mantener
 ### Clonar el repositorio
 
 ```bash
-git clone https://github.com/usuario/repositorio.git
-cd repositorio
+git clone https://github.com/lesquel/servidores-web-primer-pacial.git
+cd servidores-web-primer-pacial
 ```
 
 ### Configurar variables de entorno
