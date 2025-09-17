@@ -1,0 +1,61 @@
+<!-- Hero (dark, brand) -->
+<section class="relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-28">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+      <div>
+        <h1 class="text-4xl sm:text-5xl font-extrabold mb-4" style="color: var(--color-title)">
+          Reserva tu mesa en segundos
+        </h1>
+        <p class="text-lg opacity-90 mb-8">
+          Explora restaurantes, mira su menú, elige tu mesa en el plano y confirma tu reserva.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <a routerLink="/restaurants" class="px-6 py-3 rounded-lg text-sm font-semibold"
+            style="background: var(--color-primary); color: #fff;">Explorar restaurantes</a>
+          <a routerLink="/contact"
+            class="px-6 py-3 rounded-lg text-sm font-semibold border border-white/10 hover:bg-white/10">Hablar con
+            nosotros</a>
+        </div>
+      </div>
+      <div class="relative">
+        <img src="/imgs/image.png" alt="MesaYa" class="w-full h-auto rounded-xl shadow-lg border border-white/10" />
+        <div class="absolute -z-10 -top-10 -right-10 w-72 h-72 rounded-full"
+          style="background: radial-gradient(closest-side, rgba(244,81,31,0.25), transparent)"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features (dark cards) -->
+<section class="py-14">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="rounded-xl p-5 border border-white/10 shadow" style="background: var(--color-surface)">
+        <h3 class="font-semibold mb-2" style="color: var(--color-title)">Menú digital</h3>
+        <p class="text-sm opacity-85">Fotos, precios y descripciones claras para decidir mejor.</p>
+      </div>
+      <div class="rounded-xl p-5 border border-white/10 shadow" style="background: var(--color-surface)">
+        <h3 class="font-semibold mb-2" style="color: var(--color-title)">Disponibilidad</h3>
+        <p class="text-sm opacity-85">Mesas en tiempo real, sin esperas ni sorpresas.</p>
+      </div>
+      <div class="rounded-xl p-5 border border-white/10 shadow" style="background: var(--color-surface)">
+        <h3 class="font-semibold mb-2" style="color: var(--color-title)">Reservas fáciles</h3>
+        <p class="text-sm opacity-85">Confirma tu lugar en pocos clics, directo desde tu móvil.</p>
+      </div>
+      <div class="rounded-xl p-5 border border-white/10 shadow" style="background: var(--color-surface)">
+        <h3 class="font-semibold mb-2" style="color: var(--color-title)">Ubicación precisa</h3>
+        <p class="text-sm opacity-85">Direcciones claras y enlace a mapas para llegar sin perderte.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="py-12">
+  <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+    <h2 class="text-2xl sm:text-3xl font-bold mb-3" style="color: var(--color-title)">¿Listo para probar?</h2>
+    <p class="opacity-85 mb-6">Ve restaurantes disponibles ahora mismo y reserva una mesa.</p>
+    <a routerLink="/restaurants" class="px-6 py-3 rounded-lg text-sm font-semibold"
+      style="background: var(--color-primary); color: #fff;">Ver restaurantes</a>
+  </div>
+</section>

@@ -1,0 +1,41 @@
+@import 'tailwindcss';
+
+/* Theme variables */
+:root {
+  --color-background: #121617;
+  --color-primary: #f4511f;
+  --color-paragraph: #dad8d7;
+  --color-title: #ffffff;
+  --color-surface: color-mix(in oklab, var(--color-background), white 6%);
+  color-scheme: dark;
+}
+
+/* Helper classes (optional) */
+
+/* Global styles for smooth scrolling and modern appearance */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  background: var(--color-background);
+  color: var(--color-paragraph);
+}
+
+/* Custom scroll behavior for better UX */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f1317;
+}
+::-webkit-scrollbar-thumb {
+  background: #2b2f33;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3f44;
+}

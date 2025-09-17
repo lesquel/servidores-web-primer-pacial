@@ -1,0 +1,32 @@
+<section class="py-12">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <header class="mb-6">
+            <h1 class="text-3xl font-bold" style="color: var(--color-title)">Contacto</h1>
+            <p class="opacity-80">¿Tienes dudas o sugerencias? Escríbenos y te responderemos.</p>
+        </header>
+
+        <form class="space-y-4 rounded-xl p-5 border border-white/10 shadow" style="background: var(--color-surface)"
+            (ngSubmit)="submit()">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="text-sm">Nombre
+                    <input [(ngModel)]="name" name="name" type="text" required
+                        class="mt-1 w-full bg-white/5 border border-white/10 rounded px-3 py-2" />
+                </label>
+                <label class="text-sm">Email
+                    <input [(ngModel)]="email" name="email" type="email" required
+                        class="mt-1 w-full bg-white/5 border border-white/10 rounded px-3 py-2" />
+                </label>
+            </div>
+            <label class="text-sm block">Mensaje
+                <textarea [(ngModel)]="message" name="message" rows="6" required
+                    class="mt-1 w-full bg-white/5 border border-white/10 rounded px-3 py-2"></textarea>
+            </label>
+            <div class="flex justify-end">
+                <button type="submit" class="px-5 py-2.5 rounded-lg" [disabled]="submitting"
+                    style="background: var(--color-primary); color: #fff;">
+                    {{ submitting ? 'Enviando…' : 'Enviar' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
