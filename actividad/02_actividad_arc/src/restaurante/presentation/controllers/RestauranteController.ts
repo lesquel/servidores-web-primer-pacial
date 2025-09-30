@@ -1,55 +1,30 @@
-import { Restaurante } from "../../domain/entities/Restaurante";
-import {
-  RestauranteCreate,
-  RestauranteUpdate,
-} from "../../domain/repositories/IRestauranteRepository";
-import { CrearRestauranteUseCase } from "../../application/usecases/CrearRestauranteUseCase";
-import { ActualizarRestauranteUseCase } from "../../application/usecases/ActualizarRestauranteUseCase";
-import { ObtenerRestaurantePorIdUseCase } from "../../application/usecases/ObtenerRestaurantePorIdUseCase";
-import { ListarRestaurantesActivosUseCase } from "../../application/usecases/ListarRestaurantesActivosUseCase";
-import { EliminarRestauranteUseCase } from "../../application/usecases/EliminarRestauranteUseCase";
+import { RestauranteService } from "../../application/services/restaurante.service";
+import { CreateRestauranteDto, UpdateRestauranteDto, RestauranteResponseDto } from "../../application/dtos/restaurante.dto";
 
 export class RestauranteController {
-  constructor(
-    private readonly crearRestauranteUseCase: CrearRestauranteUseCase,
-    private readonly actualizarRestauranteUseCase: ActualizarRestauranteUseCase,
-    private readonly obtenerRestaurantePorIdUseCase: ObtenerRestaurantePorIdUseCase,
-    private readonly listarRestaurantesActivosUseCase: ListarRestaurantesActivosUseCase,
-    private readonly eliminarRestauranteUseCase: EliminarRestauranteUseCase
-  ) {}
+  constructor(private readonly restauranteService: RestauranteService) {}
 
   // CREATE - mantiene callbacks por requisito
-  crearRestaurante(data: RestauranteCreate): Promise<Restaurante> {
-    return new Promise((resolve, reject) => {
-      this.crearRestauranteUseCase.execute(data, (error, resultado) => {
-        if (error) return reject(error);
-        resolve(resultado as Restaurante);
-      });
-    });
+  crearRestaurante(data: CreateRestauranteDto): Promise<RestauranteResponseDto> {
+    return this.restauranteService.crear(data);
   }
 
   // UPDATE - Promises
-  actualizarRestaurante(
-    id: string,
-    data: RestauranteUpdate
-  ): Promise<Restaurante> {
-    return this.actualizarRestauranteUseCase.execute(id, data);
+  actualizarRestaurante(id: string, data: UpdateRestauranteDto): Promise<RestauranteResponseDto> {
+    return this.restauranteService.actualizar(id, data);
   }
 
   // READ - Async/Await
-  async obtenerRestaurantePorId(id: string): Promise<Restaurante | null> {
-    return this.obtenerRestaurantePorIdUseCase.execute(id);
+  async obtenerRestaurantePorId(id: string): Promise<RestauranteResponseDto | null> {
+    return this.restauranteService.obtenerPorId(id);
   }
 
-  async obtenerRestaurantesActivos(): Promise<Restaurante[]> {
-    return this.listarRestaurantesActivosUseCase.execute();
+  async obtenerRestaurantesActivos(): Promise<RestauranteResponseDto[]> {
+    return this.restauranteService.listarActivos();
   }
 
   // DELETE - Async/Await
-  async eliminarRestaurante(
-    id: string,
-    eliminacionFisica: boolean = false
-  ): Promise<boolean> {
-    return this.eliminarRestauranteUseCase.execute(id, eliminacionFisica);
+  async eliminarRestaurante(id: string, eliminacionFisica: boolean = false): Promise<boolean> {
+    return this.restauranteService.eliminar(id, eliminacionFisica);
   }
 }

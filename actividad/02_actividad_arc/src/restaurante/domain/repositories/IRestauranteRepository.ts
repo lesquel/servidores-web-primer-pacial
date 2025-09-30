@@ -1,36 +1,14 @@
-import { Restaurante } from "../entities/Restaurante";
-
-export interface RestauranteCreate {
-  nombre: string;
-  descripcion: string;
-  ubicacion: string;
-  horariosAtencion: string;
-  capacidadTotal: number;
-  suscripcionId?: string | null;
-  imagenId?: string | null;
-  eliminado?: boolean | null;
-}
-
-export interface RestauranteUpdate {
-  nombre?: string;
-  descripcion?: string;
-  ubicacion?: string;
-  horariosAtencion?: string;
-  capacidadTotal?: number;
-  suscripcionId?: string | null;
-  imagenId?: string | null;
-  eliminado?: boolean | null;
-}
+import { Restaurante, RestauranteCreateProps, RestauranteUpdateProps } from "../entities/Restaurante";
 
 export interface IRestauranteRepository {
   // CREATE - Usando Callbacks (error, resultado)
   crear(
-    data: RestauranteCreate,
+    data: RestauranteCreateProps,
     callback: (error: Error | null, resultado: Restaurante | null) => void
   ): void;
 
   // UPDATE - Retornando Promise<Usuario>
-  actualizar(id: string, data: RestauranteUpdate): Promise<Restaurante>;
+  actualizar(id: string, data: RestauranteUpdateProps): Promise<Restaurante>;
 
   // READ - Async functions retornando Promise
   obtenerPorId(id: string): Promise<Restaurante | null>;

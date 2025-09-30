@@ -5,11 +5,13 @@ import { ActualizarRestauranteUseCase } from "../application/usecases/Actualizar
 import { ObtenerRestaurantePorIdUseCase } from "../application/usecases/ObtenerRestaurantePorIdUseCase";
 import { ListarRestaurantesActivosUseCase } from "../application/usecases/ListarRestaurantesActivosUseCase";
 import { EliminarRestauranteUseCase } from "../application/usecases/EliminarRestauranteUseCase";
+import { RestauranteService } from "../application/services/restaurante.service";
 
 export class RestauranteContainer {
   private static instance: RestauranteContainer;
   private readonly restauranteRepository: RestauranteRepositoryInMemory;
   private readonly restauranteController: RestauranteController;
+  private readonly restauranteService: RestauranteService;
   private readonly crearRestauranteUseCase: CrearRestauranteUseCase;
   private readonly actualizarRestauranteUseCase: ActualizarRestauranteUseCase;
   private readonly obtenerRestaurantePorIdUseCase: ObtenerRestaurantePorIdUseCase;
@@ -36,14 +38,17 @@ export class RestauranteContainer {
       this.restauranteRepository
     );
 
-    // Presentation
-    this.restauranteController = new RestauranteController(
+    // Application Service
+    this.restauranteService = new RestauranteService(
       this.crearRestauranteUseCase,
       this.actualizarRestauranteUseCase,
       this.obtenerRestaurantePorIdUseCase,
       this.listarRestaurantesActivosUseCase,
       this.eliminarRestauranteUseCase
     );
+
+    // Presentation (usa el service)
+    this.restauranteController = new RestauranteController(this.restauranteService);
   }
 
   public static getInstance(): RestauranteContainer {
@@ -59,5 +64,9 @@ export class RestauranteContainer {
 
   public getRestauranteController(): RestauranteController {
     return this.restauranteController;
+  }
+
+  public getRestauranteService(): RestauranteService {
+    return this.restauranteService;
   }
 }

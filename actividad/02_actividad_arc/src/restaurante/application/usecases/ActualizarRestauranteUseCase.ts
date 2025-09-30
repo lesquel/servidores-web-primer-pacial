@@ -1,13 +1,10 @@
-import {
-  IRestauranteRepository,
-  RestauranteUpdate,
-} from "../../domain/repositories/IRestauranteRepository";
-import { Restaurante } from "../../domain/entities/Restaurante";
+import { IRestauranteRepository } from "../../domain/repositories/IRestauranteRepository";
+import { Restaurante, RestauranteUpdateProps } from "../../domain/entities/Restaurante";
 
 export class ActualizarRestauranteUseCase {
   constructor(private readonly restauranteRepository: IRestauranteRepository) {}
 
-  async execute(id: string, data: RestauranteUpdate): Promise<Restaurante> {
+  async execute(id: string, data: RestauranteUpdateProps): Promise<Restaurante> {
     // Validaciones parciales (opcionales)
     if (data.nombre !== undefined && data.nombre.trim().length === 0) {
       throw new Error("El nombre no puede estar vacío");
