@@ -28,7 +28,8 @@ async function main() {
     console.log("------------------------------------------------");
 
     console.log("Restaurantes activos:");
-    const restaurantesActivos = await restauranteController.obtenerRestaurantesActivos();
+    const restaurantesActivos =
+      await restauranteController.obtenerRestaurantesActivos();
     restaurantesActivos.forEach((restaurante, index) => {
       console.log(
         `${index + 1}. ${restaurante.nombre} — ${

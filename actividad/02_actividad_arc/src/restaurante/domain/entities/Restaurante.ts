@@ -44,10 +44,7 @@ export class RestauranteEntity {
   public eliminado?: boolean | null;
   public imagenId?: string | null;
 
-  constructor(
-    id: string,
-    props: RestauranteCreateProps
-  ) {
+  constructor(id: string, props: RestauranteCreateProps) {
     this.id = id;
     this.nombre = props.nombre;
     this.descripcion = props.descripcion;

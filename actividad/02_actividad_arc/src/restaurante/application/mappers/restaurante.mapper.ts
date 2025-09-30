@@ -1,5 +1,13 @@
-import { Restaurante, RestauranteCreateProps, RestauranteUpdateProps } from "../../domain/entities/Restaurante";
-import { CreateRestauranteDto, UpdateRestauranteDto, RestauranteResponseDto } from "../dtos/restaurante.dto";
+import {
+  Restaurante,
+  RestauranteCreateProps,
+  RestauranteUpdateProps,
+} from "../../domain/entities/Restaurante";
+import {
+  CreateRestauranteDto,
+  UpdateRestauranteDto,
+  RestauranteResponseDto,
+} from "../dtos/restaurante.dto";
 
 export const RestauranteMapper = {
   toCreateProps(dto: CreateRestauranteDto): RestauranteCreateProps {
@@ -23,7 +31,8 @@ export const RestauranteMapper = {
       props.horariosAtencion = dto.horariosAtencion;
     if (dto.capacidadTotal !== undefined)
       props.capacidadTotal = dto.capacidadTotal;
-    if (dto.suscripcionId !== undefined) props.suscripcionId = dto.suscripcionId;
+    if (dto.suscripcionId !== undefined)
+      props.suscripcionId = dto.suscripcionId;
     if (dto.imagenId !== undefined) props.imagenId = dto.imagenId;
     if (dto.eliminado !== undefined) props.eliminado = dto.eliminado;
     return props;

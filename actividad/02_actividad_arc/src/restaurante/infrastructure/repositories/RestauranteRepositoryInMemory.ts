@@ -1,5 +1,9 @@
 import { v7 as uuid } from "uuid";
-import { Restaurante, RestauranteCreateProps, RestauranteUpdateProps } from "../../domain/entities/Restaurante";
+import {
+  Restaurante,
+  RestauranteCreateProps,
+  RestauranteUpdateProps,
+} from "../../domain/entities/Restaurante";
 import { IRestauranteRepository } from "../../domain/repositories/IRestauranteRepository";
 
 export class RestauranteRepositoryInMemory implements IRestauranteRepository {

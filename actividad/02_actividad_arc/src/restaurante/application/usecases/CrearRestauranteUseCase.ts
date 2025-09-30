@@ -1,5 +1,8 @@
 import { IRestauranteRepository } from "../../domain/repositories/IRestauranteRepository";
-import { RestauranteCreateProps, Restaurante } from "../../domain/entities/Restaurante";
+import {
+  RestauranteCreateProps,
+  Restaurante,
+} from "../../domain/entities/Restaurante";
 
 export class CrearRestauranteUseCase {
   constructor(private readonly restauranteRepository: IRestauranteRepository) {}

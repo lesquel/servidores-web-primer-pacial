@@ -48,7 +48,9 @@ export class RestauranteContainer {
     );
 
     // Presentation (usa el service)
-    this.restauranteController = new RestauranteController(this.restauranteService);
+    this.restauranteController = new RestauranteController(
+      this.restauranteService
+    );
   }
 
   public static getInstance(): RestauranteContainer {

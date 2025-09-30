@@ -3,7 +3,11 @@ import { ActualizarRestauranteUseCase } from "../usecases/ActualizarRestauranteU
 import { ObtenerRestaurantePorIdUseCase } from "../usecases/ObtenerRestaurantePorIdUseCase";
 import { ListarRestaurantesActivosUseCase } from "../usecases/ListarRestaurantesActivosUseCase";
 import { EliminarRestauranteUseCase } from "../usecases/EliminarRestauranteUseCase";
-import { CreateRestauranteDto, UpdateRestauranteDto, RestauranteResponseDto } from "../dtos/restaurante.dto";
+import {
+  CreateRestauranteDto,
+  UpdateRestauranteDto,
+  RestauranteResponseDto,
+} from "../dtos/restaurante.dto";
 import { RestauranteMapper } from "../mappers/restaurante.mapper";
 
 export class RestauranteService {
@@ -25,7 +29,10 @@ export class RestauranteService {
     });
   }
 
-  async actualizar(id: string, data: UpdateRestauranteDto): Promise<RestauranteResponseDto> {
+  async actualizar(
+    id: string,
+    data: UpdateRestauranteDto
+  ): Promise<RestauranteResponseDto> {
     const props = RestauranteMapper.toUpdateProps(data);
     const entity = await this.actualizarRestaurante.execute(id, props);
     return RestauranteMapper.toResponseDto(entity);
@@ -41,7 +48,10 @@ export class RestauranteService {
     return entities.map(RestauranteMapper.toResponseDto);
   }
 
-  async eliminar(id: string, eliminacionFisica: boolean = false): Promise<boolean> {
+  async eliminar(
+    id: string,
+    eliminacionFisica: boolean = false
+  ): Promise<boolean> {
     return this.eliminarRestaurante.execute(id, eliminacionFisica);
   }
 }

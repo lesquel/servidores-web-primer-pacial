@@ -1,4 +1,8 @@
-import { Restaurante, RestauranteCreateProps, RestauranteUpdateProps } from "../entities/Restaurante";
+import {
+  Restaurante,
+  RestauranteCreateProps,
+  RestauranteUpdateProps,
+} from "../entities/Restaurante";
 
 export interface IRestauranteRepository {
   // CREATE - Usando Callbacks (error, resultado)
