@@ -4,3 +4,6 @@
 [submodule "actividad/02_arq_domunio_respo_grupal"]
 	path = actividad/02_arq_domunio_respo_grupal
 	url = https://github.com/GINGERPEREZ/Practica2MB.git
+[submodule "mesaYa/mesa-ya-res"]
+	path = mesaYa/mesa-ya-res
+	url = https://github.com/lesquel/mesaYa_Res.git
