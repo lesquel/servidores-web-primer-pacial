@@ -1,3 +1,6 @@
 [submodule "mesaYa/frontend"]
 	path = mesaYa/frontend
 	url = https://github.com/StevSant/mesaYa_frontend.git
+[submodule "actividad/02_arq_domunio_respo_grupal"]
+	path = actividad/02_arq_domunio_respo_grupal
+	url = https://github.com/GINGERPEREZ/Practica2MB.git
