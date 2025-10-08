@@ -7,3 +7,6 @@
 [submodule "mesaYa/mesa-ya-res"]
 	path = mesaYa/mesa-ya-res
 	url = https://github.com/lesquel/mesaYa_Res.git
+[submodule "actividad/03_orm_domain"]
+	path = actividad/03_orm_domain
+	url = https://github.com/lesquel/domain_orm.git
