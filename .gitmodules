@@ -10,3 +10,6 @@
 [submodule "actividad/03_orm_domain"]
 	path = actividad/03_orm_domain
 	url = https://github.com/lesquel/domain_orm.git
+[submodule "actividad/04_rest_domain"]
+	path = actividad/04_rest_domain
+	url = https://github.com/lesquel/actividad_rest_domain_nest.git
