@@ -19,7 +19,8 @@ import * as jwt from "jsonwebtoken";
           throw new Error("JWT_SECRET is not configured");
         }
 
-        const expiresIn = (config.get<string>("JWT_EXPIRES_IN") ?? "1d") as jwt.SignOptions["expiresIn"];
+        const expiresIn = (config.get<string>("JWT_EXPIRES_IN") ??
+          "1d") as jwt.SignOptions["expiresIn"];
 
         return {
           secret,
