@@ -33,12 +33,16 @@ const CONCURRENT_REQUESTS = 5;
 
 // Datos de la reserva de prueba
 const reservationPayload = {
-  tableId: "123e4567-e89b-12d3-a456-426614174000", // UUID de mesa de prueba
-  date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0], // Mañana
-  time: "20:00",
-  guests: 4,
-  notes: `Prueba de idempotencia - Chaos Test - ${new Date().toISOString()}`,
   idempotencyKey: IDEMPOTENCY_KEY,
+  restaurantId: "550e8400-e29b-41d4-a716-446655440000", // UUID de restaurante de prueba
+  tableId: "123e4567-e89b-12d3-a456-426614174000", // UUID de mesa de prueba
+  reservationDate: new Date(Date.now() + 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0], // Mañana
+  reservationTime: new Date(
+    Date.now() + 24 * 60 * 60 * 1000 + 19 * 60 * 60 * 1000
+  ).toISOString(), // Mañana 19:00
+  numberOfGuests: 4,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -94,7 +98,7 @@ async function makeRequest(requestId) {
   const startTime = Date.now();
 
   try {
-    const response = await fetch(`${GATEWAY_URL}/api/reservations`, {
+    const response = await fetch(`${GATEWAY_URL}/api/v1/reservations`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

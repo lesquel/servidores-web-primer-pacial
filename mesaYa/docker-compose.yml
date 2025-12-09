@@ -1,8 +1,10 @@
-version: '3.9'
-
 services:
+  # ═══════════════════════════════════════════════════════════════════════
+  # INFRAESTRUCTURA BASE
+  # ═══════════════════════════════════════════════════════════════════════
+
   # ───────────────────────────────────────────────────────────────
-  # RabbitMQ - Broker de mensajería (reemplaza a Kafka)
+  # RabbitMQ - Broker de mensajería para microservicios
   # ───────────────────────────────────────────────────────────────
   rabbitmq:
     image: rabbitmq:3-management
@@ -44,7 +46,7 @@ services:
       - mesaya-network
 
   # ───────────────────────────────────────────────────────────────
-  # PostgreSQL - Base de datos (db_mesas & db_reservas)
+  # PostgreSQL - Base de datos (db_mesas, db_reservas, mesaya)
   # ───────────────────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
@@ -67,7 +69,70 @@ services:
       - mesaya-network
 
   # ───────────────────────────────────────────────────────────────
+  # Kafka - Event streaming para mesa-ya-res (monolito)
+  # ───────────────────────────────────────────────────────────────
+  kafka:
+    image: apache/kafka:3.8.0
+    hostname: kafka
+    container_name: mesaya-kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    ports:
+      - '9092:9092'
+      - '29092:29092'
+    healthcheck:
+      test: ['CMD-SHELL', '/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1']
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - mesaya-network
+
+  # ───────────────────────────────────────────────────────────────
+  # Kafka Init - Crear topics necesarios
+  # ───────────────────────────────────────────────────────────────
+  kafka-init:
+    image: apache/kafka:3.8.0
+    container_name: mesaya-kafka-init
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ['/bin/bash', '-c']
+    command:
+      - |
+        echo "Creando topics de Kafka..."
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic mesa-ya.reviews.created --partitions 1 --replication-factor 1
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic mesa-ya.restaurants.created --partitions 1 --replication-factor 1
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic mesa-ya.sections.created --partitions 1 --replication-factor 1
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic mesa-ya.tables.created --partitions 1 --replication-factor 1
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic mesa-ya.menus.created --partitions 1 --replication-factor 1
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic mesa-ya.dishes.created --partitions 1 --replication-factor 1
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic mesa-ya.images.created --partitions 1 --replication-factor 1
+        echo "Topics creados exitosamente!"
+    restart: 'no'
+    networks:
+      - mesaya-network
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # MICROSERVICIOS (Patrón Idempotent Consumer)
+  # ═══════════════════════════════════════════════════════════════════════
+
+  # ───────────────────────────────────────────────────────────────
   # API Gateway - Punto de entrada (valida JWT)
+  # Puerto: 3000 - Para microservicios (reservas idempotentes)
   # ───────────────────────────────────────────────────────────────
   gateway:
     build:
@@ -80,6 +145,7 @@ services:
       RABBITMQ_URL: amqp://${RABBITMQ_USER:-mesaya}:${RABBITMQ_PASS:-mesaya_secret}@rabbitmq:5672
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-change-this-super-long-secret-key}
     ports:
       - '3000:3000'
     depends_on:
@@ -113,7 +179,7 @@ services:
       - mesaya-network
 
   # ───────────────────────────────────────────────────────────────
-  # Microservicio Reservations (Entidad Transaccional)
+  # Microservicio Reservations (Entidad Transaccional + Idempotencia)
   # ───────────────────────────────────────────────────────────────
   ms-reservations:
     build:
@@ -135,6 +201,40 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - mesaya-network
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # MONOLITO LEGACY (mesa-ya-res) - API REST completa
+  # ═══════════════════════════════════════════════════════════════════════
+
+  # ───────────────────────────────────────────────────────────────
+  # Mesa-Ya-Res - API REST (Auth, Restaurantes, Menús, etc.)
+  # Puerto: 3001 - Para login y obtener JWT
+  # Docs: http://localhost:3001/docs
+  # ───────────────────────────────────────────────────────────────
+  mesa-ya-res:
+    build:
+      context: ./mesa-ya-res
+      dockerfile: Dockerfile
+    container_name: mesaya-rest-api
+    env_file:
+      - ./mesa-ya-res/.env
+    environment:
+      KAFKA_BROKER: kafka:9092
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_CLIENT_ID: mesa-ya-service
+      KAFKA_GROUP_ID: mesa-ya-group
+      NODE_ENV: production
+      APP_PORT: 3001
+    ports:
+      - '3001:3001'
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
     networks:
       - mesaya-network
 

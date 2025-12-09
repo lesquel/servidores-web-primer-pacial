@@ -69,34 +69,76 @@ export class RedisService {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // PASO 2: Intentar adquirir lock distribuido
+    // PASO 2: Intentar adquirir lock distribuido con reintentos
     // SET key value NX PX milliseconds (atómico)
     // ─────────────────────────────────────────────────────────────
     const lockValue = `${Date.now()}-${Math.random()
       .toString(36)
       .substring(7)}`;
-    const lockAcquired = await this.redis.set(
-      lockKey,
-      lockValue,
-      "PX",
-      this.lockTtlMs,
-      "NX"
-    );
 
-    if (!lockAcquired) {
-      // Otro proceso tiene el lock, podría ser un duplicado en proceso
-      console.log(`🔒 [Redis] No se pudo adquirir lock para: ${key}`);
-      // Esperar un poco y verificar de nuevo
-      await this.sleep(100);
+    // Reintentar hasta 10 veces con backoff
+    const maxRetries = 10;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const lockAcquired = await this.redis.set(
+        lockKey,
+        lockValue,
+        "PX",
+        this.lockTtlMs,
+        "NX"
+      );
+
+      if (lockAcquired) {
+        console.log(
+          `🔐 [Redis] Lock adquirido para: ${key} (intento ${attempt + 1})`
+        );
+        break;
+      }
+
+      // No se pudo adquirir lock, verificar si ya existe la clave
       const checkAgain = await this.redis.get(idempotencyKey);
+      if (checkAgain) {
+        console.log(
+          `🔍 [Redis] Duplicado detectado mientras esperaba lock: ${key}`
+        );
+        return {
+          isDuplicate: true,
+          existingReservationId: checkAgain,
+          lockAcquired: false,
+        };
+      }
+
+      // Esperar con backoff exponencial antes de reintentar
+      const waitMs = Math.min(50 * Math.pow(2, attempt), 500);
+      console.log(
+        `🔒 [Redis] Lock ocupado, reintentando en ${waitMs}ms (intento ${
+          attempt + 1
+        }/${maxRetries})`
+      );
+      await this.sleep(waitMs);
+    }
+
+    // Verificar si finalmente obtuvimos el lock
+    const currentLockValue = await this.redis.get(lockKey);
+    if (currentLockValue !== lockValue) {
+      // No pudimos obtener el lock, verificar si ya existe la reserva
+      const finalCheck = await this.redis.get(idempotencyKey);
+      if (finalCheck) {
+        return {
+          isDuplicate: true,
+          existingReservationId: finalCheck,
+          lockAcquired: false,
+        };
+      }
+      // Si no hay reserva y no tenemos lock, es un error de concurrencia
+      console.log(
+        `⚠️ [Redis] No se pudo adquirir lock después de ${maxRetries} intentos: ${key}`
+      );
       return {
-        isDuplicate: !!checkAgain,
-        existingReservationId: checkAgain || undefined,
+        isDuplicate: true, // Tratamos como duplicado para prevenir creación
+        existingReservationId: undefined,
         lockAcquired: false,
       };
     }
-
-    console.log(`🔐 [Redis] Lock adquirido para: ${key}`);
 
     // ─────────────────────────────────────────────────────────────
     // PASO 3: Segunda verificación (con lock - evita race condition)

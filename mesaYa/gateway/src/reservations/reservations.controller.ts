@@ -117,10 +117,24 @@ export class ReservationsController {
       const duration = Date.now() - startTime;
 
       // Extraer información del error RPC
-      const errorData = error?.message ? JSON.parse(error.message) : error;
+      // El error puede venir como objeto directamente o como string JSON
+      let errorData: any;
+      if (typeof error === "object" && error !== null) {
+        // El error viene como objeto (RpcException)
+        errorData = error;
+      } else if (typeof error?.message === "string") {
+        try {
+          errorData = JSON.parse(error.message);
+        } catch {
+          errorData = { message: error.message };
+        }
+      }
 
       // Manejar errores de duplicado (idempotencia)
-      if (errorData?.status === 409 || error?.message?.includes("Duplicate")) {
+      if (
+        errorData?.status === 409 ||
+        errorData?.message?.includes("Duplicate")
+      ) {
         this.logger.warn(`⚠️ [Gateway] Duplicado detectado en ${duration}ms`);
         this.logger.warn(
           `   IdempotencyKey: ${createReservationDto.idempotencyKey}`

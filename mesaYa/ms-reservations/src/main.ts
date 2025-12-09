@@ -17,6 +17,9 @@ async function bootstrap() {
         queueOptions: {
           durable: true,
         },
+        // Configurar para manejar mensajes concurrentes correctamente
+        prefetchCount: 1, // Procesar un mensaje a la vez para evitar problemas de ack
+        noAck: false, // Usar acknowledgements manuales
       },
     }
   );
