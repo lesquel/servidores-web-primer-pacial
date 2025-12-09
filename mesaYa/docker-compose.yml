@@ -1,0 +1,148 @@
+version: '3.9'
+
+services:
+  # ───────────────────────────────────────────────────────────────
+  # RabbitMQ - Broker de mensajería (reemplaza a Kafka)
+  # ───────────────────────────────────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: mesaya-rabbitmq
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-mesaya}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-mesaya_secret}
+    ports:
+      - '5672:5672'   # AMQP
+      - '15672:15672' # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mesaya-network
+
+  # ───────────────────────────────────────────────────────────────
+  # Redis - Cache para idempotencia
+  # ───────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: mesaya-redis
+    command: redis-server --appendonly yes
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mesaya-network
+
+  # ───────────────────────────────────────────────────────────────
+  # PostgreSQL - Base de datos (db_mesas & db_reservas)
+  # ───────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: mesaya-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mesaya}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mesaya_secret}
+      POSTGRES_DB: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-mesaya}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mesaya-network
+
+  # ───────────────────────────────────────────────────────────────
+  # API Gateway - Punto de entrada (valida JWT)
+  # ───────────────────────────────────────────────────────────────
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: mesaya-gateway
+    env_file:
+      - .env
+    environment:
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-mesaya}:${RABBITMQ_PASS:-mesaya_secret}@rabbitmq:5672
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - '3000:3000'
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - mesaya-network
+
+  # ───────────────────────────────────────────────────────────────
+  # Microservicio Tables (Entidad Maestra)
+  # ───────────────────────────────────────────────────────────────
+  ms-tables:
+    build:
+      context: ./ms-tables
+      dockerfile: Dockerfile
+    container_name: mesaya-ms-tables
+    env_file:
+      - .env
+    environment:
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-mesaya}:${RABBITMQ_PASS:-mesaya_secret}@rabbitmq:5672
+      DATABASE_URL: postgres://${POSTGRES_USER:-mesaya}:${POSTGRES_PASSWORD:-mesaya_secret}@postgres:5432/db_mesas
+      PGDATABASE: db_mesas
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - mesaya-network
+
+  # ───────────────────────────────────────────────────────────────
+  # Microservicio Reservations (Entidad Transaccional)
+  # ───────────────────────────────────────────────────────────────
+  ms-reservations:
+    build:
+      context: ./ms-reservations
+      dockerfile: Dockerfile
+    container_name: mesaya-ms-reservations
+    env_file:
+      - .env
+    environment:
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-mesaya}:${RABBITMQ_PASS:-mesaya_secret}@rabbitmq:5672
+      DATABASE_URL: postgres://${POSTGRES_USER:-mesaya}:${POSTGRES_PASSWORD:-mesaya_secret}@postgres:5432/db_reservas
+      PGDATABASE: db_reservas
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - mesaya-network
+
+volumes:
+  rabbitmq_data:
+  redis_data:
+  postgres_data:
+
+networks:
+  mesaya-network:
+    driver: bridge
