@@ -1,7 +1,6 @@
-import { Injectable, Inject } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { Redis } from "ioredis";
-import { REDIS_CLIENT } from "./redis.module";
+import Redis from "ioredis";
 
 export interface IdempotencyResult {
   isDuplicate: boolean;
@@ -13,13 +12,24 @@ export interface IdempotencyResult {
 export class RedisService {
   private readonly ttlSeconds: number;
   private readonly lockTtlMs: number = 5000; // 5 segundos para el lock
+  private readonly redis: Redis;
 
-  constructor(
-    @Inject(REDIS_CLIENT) private readonly redis: Redis,
-    private readonly config: ConfigService
-  ) {
+  constructor(private readonly config: ConfigService) {
     this.ttlSeconds =
       this.config.get<number>("IDEMPOTENCY_TTL_SECONDS") || 86400; // 24h default
+
+    this.redis = new Redis({
+      host: this.config.get<string>("REDIS_HOST") || "localhost",
+      port: this.config.get<number>("REDIS_PORT") || 6379,
+    });
+
+    this.redis.on("connect", () => {
+      console.log("✅ Redis connected");
+    });
+
+    this.redis.on("error", (err) => {
+      console.error("❌ Redis error:", err);
+    });
   }
 
   /**
